@@ -22,11 +22,13 @@ func (slot) Book(_ context.Context, b bookRequest) (bookResponse, error) {
 	// parse 
 	// submit
 	if b.Min == "" {
-		return bookResponse{"", "", "Min missing"}, errors.New("Empty min parameter")
+		return bookResponse{}, ErrParameter
 	}
 	br := bookResponse{b.Hour + ":" + b.Min + " 21/08/2018", b.Court, ""}
 	return br, nil
 }
+
+var ErrParameter = errors.New("Empty parameter")
 
 type bookRequest struct {
 	Days     string `json:"days"`
