@@ -11,26 +11,26 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
-type Slot interface {
-	Book(context.Context, bookRequest) (bookResponse, error)
+type BookingService interface {
+	Book(context.Context, slot) (booking, error)
 }
 
-type slot struct{}
+type bookingService struct{}
 
-func (slot) Book(_ context.Context, b bookRequest) (bookResponse, error) {
+func (bookingService) Book(_ context.Context, b slot) (booking, error) {
 	// read environment variables defining tynemouth squash url
-	// parse 
+	// parse
 	// submit
 	if b.Min == "" {
-		return bookResponse{}, ErrParameter
+		return booking{}, ErrParameter
 	}
-	br := bookResponse{b.Hour + ":" + b.Min + " 21/08/2018", b.Court, ""}
+	br := booking{b.Hour + ":" + b.Min + " 21/08/2018", b.Court, ""}
 	return br, nil
 }
 
 var ErrParameter = errors.New("Empty parameter")
 
-type bookRequest struct {
+type slot struct {
 	Days     string `json:"days"`
 	Court    string `json:"court"`
 	Hour     string `json:"hour"`
@@ -38,25 +38,25 @@ type bookRequest struct {
 	TimeSlot string `json:"timeslot"`
 }
 
-type bookResponse struct {
+type booking struct {
 	Time  string `json:"time"`
 	Court string `json:"court"`
 	Err   string `json:"err,omitempty"`
 }
 
-func makeBookEndpoint(svc Slot) endpoint.Endpoint {
+func makeBookEndpoint(svc bookingService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(bookRequest)
+		req := request.(slot)
 		br, err := svc.Book(ctx, req)
 		if err != nil {
-			return bookResponse{br.Time, br.Court, err.Error()}, nil
+			return booking{br.Time, br.Court, err.Error()}, nil
 		}
 		return br, nil
 	}
 }
 
 func main() {
-	svc := slot{}
+	svc := bookingService{}
 
 	bookHandler := httptransport.NewServer(
 		makeBookEndpoint(svc),
@@ -69,7 +69,7 @@ func main() {
 }
 
 func decodeBookRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request bookRequest
+	var request slot
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
