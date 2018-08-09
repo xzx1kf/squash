@@ -12,13 +12,14 @@
  )
 
  type Slot interface {
-	 Book(context.Context, bookRequest) (string, string, error)
+	 Book(context.Context, bookRequest) (bookResponse, error)
  }
 
  type slot struct{}
 
- func (slot) Book(_ context.Context, b bookRequest) (string, string, error) {
-	 return b.Hour + ":" + b.Min + "21/08/2018", b.Court, nil
+ func (slot) Book(_ context.Context, b bookRequest) (bookResponse, error) {
+	 br := bookResponse{b.Hour + ":" + b.Min + " 21/08/2018", b.Court, ""}
+	 return br, nil
  }
 
  var ErrEmpty = errors.New("slot error")
@@ -40,8 +41,8 @@
  func makeBookEndpoint(svc Slot) endpoint.Endpoint {
 	 return func(ctx context.Context, request interface{}) (interface{}, error) {
 		 req := request.(bookRequest)
-		 time, court, _ := svc.Book(ctx, req)
-		 return bookResponse{time, court, ""}, nil
+		 br, _ := svc.Book(ctx, req)
+		 return br, nil
 	 }
  }
 
