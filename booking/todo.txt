@@ -1,0 +1,4 @@
+1. Add the functionality to book a court. 
+2. Use environment variables for some of the obvious constants
+3. (possibly) Pass the username and password in the call.
+
